@@ -1,0 +1,23 @@
+## Backend (.NET)
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.db
+*.db-shm
+*.db-wal
+appsettings.Development.json
+
+## Frontend (React)
+node_modules/
+dist/
+.env.local
+.env.*.local
+
+## Logs
+*.log
+
+## OS
+.DS_Store
+Thumbs.db
