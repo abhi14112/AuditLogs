@@ -8,6 +8,8 @@ const Layout = ({ children }) => {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  const [auditDropdownOpen, setAuditDropdownOpen] = useState(false);
+
   const handleLogout = () => {
     logout();
     navigate('/login');
@@ -35,13 +37,47 @@ const Layout = ({ children }) => {
                 <Package size={20} />
                 Products
               </Link>
-              <Link
-                to="/audit-logs"
-                className="flex items-center gap-2 text-gray-700 hover:text-primary-600 font-medium transition-colors"
-              >
-                <History size={20} />
-                Audit Logs
-              </Link>
+              <div className="relative">
+                <button
+                  onClick={() => setAuditDropdownOpen(!auditDropdownOpen)}
+                  className="flex items-center gap-2 text-gray-700 hover:text-primary-600 font-medium transition-colors"
+                >
+                  <History size={20} />
+                  Audit Logs
+                  <svg
+                    className={`w-4 h-4 transition-transform ${auditDropdownOpen ? "rotate-180" : ""}`}
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {auditDropdownOpen && (
+                  <div className="absolute left-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                    
+                    <Link
+                      to="/audit-logs"
+                      onClick={() => setAuditDropdownOpen(false)}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-t-lg"
+                    >
+                      Audit Logs v1
+                    </Link>
+
+                    <Link
+                      to="/audit-logs-v2"
+                      onClick={() => setAuditDropdownOpen(false)}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-b-lg"
+                    >
+                      Audit Logs v2
+                    </Link>
+
+                  </div>
+                )}
+              </div>
+
               <div className="flex items-center gap-4 ml-4 pl-4 border-l border-gray-200">
                 <span className="text-gray-700">👤 {user?.username}</span>
                 <button onClick={handleLogout} className="btn-secondary flex items-center gap-2">

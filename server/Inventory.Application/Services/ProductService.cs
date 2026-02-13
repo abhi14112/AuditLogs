@@ -9,10 +9,12 @@ namespace Inventory.Application.Services;
 public class ProductService : IProductService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IAuditLogV2Service _auditLogV2Service;
 
-    public ProductService(IUnitOfWork unitOfWork)
+    public ProductService(IUnitOfWork unitOfWork, IAuditLogV2Service auditLogV2Service)
     {
         _unitOfWork = unitOfWork;
+        _auditLogV2Service = auditLogV2Service;
     }
 
     public async Task<IEnumerable<ProductDto>> GetAllProductsAsync()
@@ -63,8 +65,17 @@ public class ProductService : IProductService
 
         await _unitOfWork.Products.AddAsync(product);
 
-        // Create audit log
+        // Create audit log (V1)
         await CreateAuditLog(userId, "Create", "Product", product.Id.ToString(), null, product, ipAddress);
+
+        // Create audit log (V2)
+        await _auditLogV2Service.LogAsync(
+            actionType: "Created",
+            entityName: "Product",
+            entityId: product.Id.ToString(),
+            oldValues: null,
+            newValues: new { Name = product.Name, Description = product.Description, Quantity = product.Quantity, Price = product.Price },
+            message: $"Created Product {product.Name}");
 
         await _unitOfWork.SaveChangesAsync();
 
@@ -106,8 +117,17 @@ public class ProductService : IProductService
 
         await _unitOfWork.Products.UpdateAsync(product);
 
-        // Create audit log
+        // Create audit log (V1)
         await CreateAuditLog(userId, "Update", "Product", product.Id.ToString(), oldProduct, product, ipAddress);
+
+        // Create audit log (V2)
+        await _auditLogV2Service.LogAsync(
+            actionType: "Updated",
+            entityName: "Product",
+            entityId: product.Id.ToString(),
+            oldValues: new { Name = oldProduct.Name, Description = oldProduct.Description, Quantity = oldProduct.Quantity, Price = oldProduct.Price },
+            newValues: new { Name = product.Name, Description = product.Description, Quantity = product.Quantity, Price = product.Price },
+            message: $"Updated Product {product.Name}");
 
         await _unitOfWork.SaveChangesAsync();
 
@@ -131,8 +151,17 @@ public class ProductService : IProductService
             return false;
         }
 
-        // Create audit log before deleting
+        // Create audit log before deleting (V1)
         await CreateAuditLog(userId, "Delete", "Product", product.Id.ToString(), product, null, ipAddress);
+
+        // Create audit log (V2)
+        await _auditLogV2Service.LogAsync(
+            actionType: "Deleted",
+            entityName: "Product",
+            entityId: product.Id.ToString(),
+            oldValues: new { Name = product.Name, Description = product.Description, Quantity = product.Quantity, Price = product.Price },
+            newValues: null,
+            message: $"Deleted Product {product.Name}");
 
         await _unitOfWork.Products.DeleteAsync(product);
         await _unitOfWork.SaveChangesAsync();
