@@ -97,10 +97,7 @@ const AuditDetailPanel = ({ detail, onClose }) => {
               <p className="text-gray-500">Timestamp</p>
               <p className="font-medium text-gray-900">{formatTimestamp(detail.timestamp)}</p>
             </div>
-            <div>
-              <p className="text-gray-500">IP Address</p>
-              <p className="font-medium text-gray-900">{detail.ipAddress}</p>
-            </div>
+
           </div>
         </div>
 
