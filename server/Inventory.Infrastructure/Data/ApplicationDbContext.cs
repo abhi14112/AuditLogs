@@ -14,6 +14,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Product> Products { get; set; }
     public DbSet<AuditLog> AuditLogs { get; set; }
     public DbSet<AuditLogV2> AuditLogsV2 { get; set; }
+    public DbSet<AuditLogV3> AuditLogsV3 { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -73,6 +74,49 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(e => e.UserId);
             entity.HasIndex(e => e.EntityId);
             entity.HasIndex(e => e.EntityName);
+        });
+
+        // AuditLogV3 configuration - Enterprise Jira-style audit logging
+        modelBuilder.Entity<AuditLogV3>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            
+            // Event Information
+            entity.Property(e => e.EventType).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.EntityType).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.EntityId).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.EntityName).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Action).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Description).HasMaxLength(500);
+            
+            // Change Tracking (JSON)
+            entity.Property(e => e.OldValues).HasColumnType("nvarchar(max)");
+            entity.Property(e => e.NewValues).HasColumnType("nvarchar(max)");
+            entity.Property(e => e.ChangesSummary).HasMaxLength(1000);
+            
+            // User Information
+            entity.Property(e => e.UserId).IsRequired();
+            entity.Property(e => e.Username).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.UserEmail).IsRequired().HasMaxLength(200);
+            
+            // Request Context
+            entity.Property(e => e.IpAddress).HasMaxLength(50);
+            entity.Property(e => e.UserAgent).HasMaxLength(500);
+            entity.Property(e => e.Source).IsRequired().HasMaxLength(100);
+            
+            // Metadata
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            entity.Property(e => e.CorrelationId).HasMaxLength(100);
+            entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Severity).IsRequired().HasMaxLength(50);
+            
+            // Indexes for high-performance querying
+            entity.HasIndex(e => e.CreatedAt).HasDatabaseName("IX_AuditLogsV3_CreatedAt");
+            entity.HasIndex(e => e.UserId).HasDatabaseName("IX_AuditLogsV3_UserId");
+            entity.HasIndex(e => e.EntityId).HasDatabaseName("IX_AuditLogsV3_EntityId");
+            entity.HasIndex(e => e.EventType).HasDatabaseName("IX_AuditLogsV3_EventType");
+            entity.HasIndex(e => e.Severity);
+            entity.HasIndex(e => e.CorrelationId);
         });
     }
 }

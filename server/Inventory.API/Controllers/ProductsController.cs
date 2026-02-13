@@ -40,9 +40,11 @@ public class ProductsController : ControllerBase
     public async Task<ActionResult<ProductDto>> CreateProduct([FromBody] CreateProductDto createProductDto)
     {
         var userId = GetCurrentUserId();
+        var username = GetCurrentUsername();
+        var userEmail = GetCurrentUserEmail();
         var ipAddress = GetClientIpAddress();
 
-        var product = await _productService.CreateProductAsync(createProductDto, userId, ipAddress);
+        var product = await _productService.CreateProductAsync(createProductDto, userId, username, userEmail, ipAddress);
         return CreatedAtAction(nameof(GetProductById), new { id = product.Id }, product);
     }
 
@@ -52,9 +54,11 @@ public class ProductsController : ControllerBase
         try
         {
             var userId = GetCurrentUserId();
+            var username = GetCurrentUsername();
+            var userEmail = GetCurrentUserEmail();
             var ipAddress = GetClientIpAddress();
 
-            var product = await _productService.UpdateProductAsync(id, updateProductDto, userId, ipAddress);
+            var product = await _productService.UpdateProductAsync(id, updateProductDto, userId, username, userEmail, ipAddress);
             return Ok(product);
         }
         catch (KeyNotFoundException ex)
@@ -67,9 +71,11 @@ public class ProductsController : ControllerBase
     public async Task<ActionResult> DeleteProduct(Guid id)
     {
         var userId = GetCurrentUserId();
+        var username = GetCurrentUsername();
+        var userEmail = GetCurrentUserEmail();
         var ipAddress = GetClientIpAddress();
 
-        var result = await _productService.DeleteProductAsync(id, userId, ipAddress);
+        var result = await _productService.DeleteProductAsync(id, userId, username, userEmail, ipAddress);
         if (!result)
         {
             return NotFound(new { message = "Product not found" });
@@ -82,6 +88,20 @@ public class ProductsController : ControllerBase
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
                           ?? User.FindFirst("sub")?.Value;
         return Guid.Parse(userIdClaim ?? throw new UnauthorizedAccessException("User ID not found in token"));
+    }
+
+    private string GetCurrentUsername()
+    {
+        return User.FindFirst(ClaimTypes.Name)?.Value 
+               ?? User.FindFirst("name")?.Value 
+               ?? "Unknown User";
+    }
+
+    private string GetCurrentUserEmail()
+    {
+        return User.FindFirst(ClaimTypes.Email)?.Value 
+               ?? User.FindFirst("email")?.Value 
+               ?? "unknown@example.com";
     }
 
     private string GetClientIpAddress()
