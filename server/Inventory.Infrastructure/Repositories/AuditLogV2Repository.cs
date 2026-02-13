@@ -72,10 +72,10 @@ public class AuditLogV2Repository : IAuditLogV2Repository
         var query = _context.AuditLogsV2.AsNoTracking();
 
         if (fromDate.HasValue)
-            query = query.Where(a => a.Timestamp >= fromDate.Value);
+            query = query.Where(a => a.Timestamp >= fromDate.Value.Date);
 
         if (toDate.HasValue)
-            query = query.Where(a => a.Timestamp <= toDate.Value);
+            query = query.Where(a => a.Timestamp < toDate.Value.Date.AddDays(1));
 
         if (!string.IsNullOrWhiteSpace(userId))
             query = query.Where(a => a.UserId == userId);
