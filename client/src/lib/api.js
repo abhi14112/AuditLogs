@@ -70,4 +70,30 @@ export const getErrorMessage = (error) => {
   }
 };
 
+// ========== Audit Logs V2 API ==========
+export const auditLogsV2API = {
+  // Get timeline view of audit logs grouped by date
+  getTimeline: (fromDate, toDate) => {
+    const params = {};
+    if (fromDate) params.fromDate = fromDate;
+    if (toDate) params.toDate = toDate;
+    return api.get('/auditlogs/v2/timeline', { params });
+  },
+
+  // Get detailed audit log by ID with before/after comparison
+  getDetail: (id) => {
+    return api.get(`/auditlogs/v2/${id}`);
+  },
+
+  // Filter audit logs by multiple criteria
+  filter: (filters) => {
+    const params = {};
+    if (filters.fromDate) params.fromDate = filters.fromDate;
+    if (filters.toDate) params.toDate = filters.toDate;
+    if (filters.userId) params.userId = filters.userId;
+    if (filters.entityName) params.entityName = filters.entityName;
+    return api.get('/auditlogs/v2/filter', { params });
+  },
+};
+
 export default api;

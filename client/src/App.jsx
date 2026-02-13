@@ -5,6 +5,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Products from './pages/Products';
 import AuditLogs from './pages/AuditLogs';
+import AuditLogsV2 from './pages/AuditLogsV2';
 
 const AppRoutes = () => {
   const { user } = useAuth();
@@ -26,6 +27,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <AuditLogs />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/audit-logs-v2"
+        element={
+          <ProtectedRoute>
+            <AuditLogsV2 />
           </ProtectedRoute>
         }
       />

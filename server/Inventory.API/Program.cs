@@ -21,12 +21,17 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // Register repositories and Unit of Work
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IAuditLogV2Repository, AuditLogV2Repository>();
 
 // Register services
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IAuditLogService, AuditLogService>();
+builder.Services.AddScoped<IAuditLogV2Service, AuditLogV2Service>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+
+// Add HttpContext accessor for audit logging
+builder.Services.AddHttpContextAccessor();
 
 // Configure JWT Authentication
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
