@@ -10,11 +10,13 @@ public class ProductService : IProductService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAuditLogV2Service _auditLogV2Service;
+    private readonly IAuditLogV3Service _auditLogV3Service;
 
-    public ProductService(IUnitOfWork unitOfWork, IAuditLogV2Service auditLogV2Service)
+    public ProductService(IUnitOfWork unitOfWork, IAuditLogV2Service auditLogV2Service, IAuditLogV3Service auditLogV3Service)
     {
         _unitOfWork = unitOfWork;
         _auditLogV2Service = auditLogV2Service;
+        _auditLogV3Service = auditLogV3Service;
     }
 
     public async Task<IEnumerable<ProductDto>> GetAllProductsAsync()
@@ -50,7 +52,7 @@ public class ProductService : IProductService
         };
     }
 
-    public async Task<ProductDto> CreateProductAsync(CreateProductDto createProductDto, Guid userId, string ipAddress)
+    public async Task<ProductDto> CreateProductAsync(CreateProductDto createProductDto, Guid userId, string username, string userEmail, string ipAddress)
     {
         var product = new Product
         {
@@ -77,6 +79,24 @@ public class ProductService : IProductService
             newValues: new { Name = product.Name, Description = product.Description, Quantity = product.Quantity, Price = product.Price },
             message: $"Created Product {product.Name}");
 
+        // Create audit log (V3)
+        await _auditLogV3Service.LogActionAsync(
+            eventType: "ProductCreated",
+            entityType: "Product",
+            entityId: product.Id.ToString(),
+            entityName: product.Name,
+            action: "Create",
+            oldValues: null,
+            newValues: new { Name = product.Name, Description = product.Description, Quantity = product.Quantity, Price = product.Price },
+            userId: userId,
+            username: username,
+            userEmail: userEmail,
+            ipAddress: ipAddress,
+            userAgent: null,
+            source: "Web",
+            severity: "Medium",
+            correlationId: null);
+
         await _unitOfWork.SaveChangesAsync();
 
         return new ProductDto
@@ -91,7 +111,7 @@ public class ProductService : IProductService
         };
     }
 
-    public async Task<ProductDto> UpdateProductAsync(Guid id, UpdateProductDto updateProductDto, Guid userId, string ipAddress)
+    public async Task<ProductDto> UpdateProductAsync(Guid id, UpdateProductDto updateProductDto, Guid userId, string username, string userEmail, string ipAddress)
     {
         var product = await _unitOfWork.Products.GetByIdAsync(id);
         if (product == null)
@@ -129,6 +149,24 @@ public class ProductService : IProductService
             newValues: new { Name = product.Name, Description = product.Description, Quantity = product.Quantity, Price = product.Price },
             message: $"Updated Product {product.Name}");
 
+        // Create audit log (V3)
+        await _auditLogV3Service.LogActionAsync(
+            eventType: "ProductUpdated",
+            entityType: "Product",
+            entityId: product.Id.ToString(),
+            entityName: product.Name,
+            action: "Update",
+            oldValues: new { Name = oldProduct.Name, Description = oldProduct.Description, Quantity = oldProduct.Quantity, Price = oldProduct.Price },
+            newValues: new { Name = product.Name, Description = product.Description, Quantity = product.Quantity, Price = product.Price },
+            userId: userId,
+            username: username,
+            userEmail: userEmail,
+            ipAddress: ipAddress,
+            userAgent: null,
+            source: "Web",
+            severity: "Medium",
+            correlationId: null);
+
         await _unitOfWork.SaveChangesAsync();
 
         return new ProductDto
@@ -143,7 +181,7 @@ public class ProductService : IProductService
         };
     }
 
-    public async Task<bool> DeleteProductAsync(Guid id, Guid userId, string ipAddress)
+    public async Task<bool> DeleteProductAsync(Guid id, Guid userId, string username, string userEmail, string ipAddress)
     {
         var product = await _unitOfWork.Products.GetByIdAsync(id);
         if (product == null)
@@ -162,6 +200,24 @@ public class ProductService : IProductService
             oldValues: new { Name = product.Name, Description = product.Description, Quantity = product.Quantity, Price = product.Price },
             newValues: null,
             message: $"Deleted Product {product.Name}");
+
+        // Create audit log (V3)
+        await _auditLogV3Service.LogActionAsync(
+            eventType: "ProductDeleted",
+            entityType: "Product",
+            entityId: product.Id.ToString(),
+            entityName: product.Name,
+            action: "Delete",
+            oldValues: new { Name = product.Name, Description = product.Description, Quantity = product.Quantity, Price = product.Price },
+            newValues: null,
+            userId: userId,
+            username: username,
+            userEmail: userEmail,
+            ipAddress: ipAddress,
+            userAgent: null,
+            source: "Web",
+            severity: "High",
+            correlationId: null);
 
         await _unitOfWork.Products.DeleteAsync(product);
         await _unitOfWork.SaveChangesAsync();

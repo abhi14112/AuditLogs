@@ -69,9 +69,17 @@ const Layout = ({ children }) => {
                     <Link
                       to="/audit-logs-v2"
                       onClick={() => setAuditDropdownOpen(false)}
-                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-b-lg"
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
                       Audit Logs v2
+                    </Link>
+
+                    <Link
+                      to="/audit-logs-v3"
+                      onClick={() => setAuditDropdownOpen(false)}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-b-lg border-t border-gray-100"
+                    >
+                      Audit Logs v3
                     </Link>
 
                   </div>
