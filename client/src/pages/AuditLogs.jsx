@@ -8,6 +8,119 @@ const AuditLogs = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [error, setError] = useState('');
+const [selectedLog, setSelectedLog] = useState(null);
+const [isModalOpen, setIsModalOpen] = useState(false);
+const openChangesModal = (log) => {
+  setSelectedLog(log);
+  setIsModalOpen(true);
+};
+const renderComparison = (oldJson, newJson) => {
+  try {
+    const oldObj = oldJson ? JSON.parse(oldJson) : {};
+    const newObj = newJson ? JSON.parse(newJson) : {};
+
+    const allKeys = Array.from(
+      new Set([...Object.keys(oldObj), ...Object.keys(newObj)])
+    ).filter(
+      key => !EXCLUDED_FIELDS.includes(key.toLowerCase())
+    );
+
+    if (allKeys.length === 0) {
+      return (
+        <p className="text-gray-500 text-sm">No changes available</p>
+      );
+    }
+
+    return (
+      <table className="min-w-full border rounded-lg overflow-hidden">
+        <thead className="bg-gray-100">
+          <tr>
+            <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600">
+              Field
+            </th>
+            <th className="px-4 py-2 text-left text-xs font-semibold text-red-600">
+              Old Value
+            </th>
+            <th className="px-4 py-2 text-left text-xs font-semibold text-green-600">
+              New Value
+            </th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {allKeys.map(key => {
+            const oldValue = oldObj[key];
+            const newValue = newObj[key];
+            const changed = oldValue !== newValue;
+
+            return (
+              <tr key={key} className="border-t">
+                
+                <td className="px-4 py-2 font-medium text-gray-800">
+                  {key}
+                </td>
+
+                <td className={`px-4 py-2 ${
+                  changed ? "text-red-600 font-medium" : "text-gray-500"
+                }`}>
+                  {oldValue ?? "-"}
+                </td>
+
+                <td className={`px-4 py-2 ${
+                  changed ? "text-green-600 font-medium" : "text-gray-500"
+                }`}>
+                  {newValue ?? "-"}
+                </td>
+
+              </tr>
+            );
+          })}
+        </tbody>
+
+      </table>
+    );
+
+  } catch {
+    return (
+      <p className="text-red-500 text-sm">
+        Invalid change data
+      </p>
+    );
+  }
+};
+
+const closeChangesModal = () => {
+  setSelectedLog(null);
+  setIsModalOpen(false);
+};
+const EXCLUDED_FIELDS = [
+  "id",
+  "createddate",
+  "updateddate",
+  "createdat",
+  "updatedat",
+  "timestamp",
+  "createdby",
+  "updatedby"
+];
+
+const formatJson = (jsonString) => {
+  if (!jsonString) return "No data";
+
+  try {
+    const parsed = JSON.parse(jsonString);
+
+    const filtered = Object.fromEntries(
+      Object.entries(parsed).filter(
+        ([key]) => !EXCLUDED_FIELDS.includes(key.toLowerCase())
+      )
+    );
+
+    return JSON.stringify(filtered, null, 2);
+  } catch {
+    return jsonString;
+  }
+};
 
   useEffect(() => {
     fetchLogs();
@@ -17,6 +130,7 @@ const AuditLogs = () => {
     try {
       setError('');
       const response = await api.get('/auditlogs');
+      console.log(Array.isArray(response.data) ? response.data : []);
       setLogs(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       const errorMsg = getErrorMessage(error);
@@ -156,7 +270,13 @@ const AuditLogs = () => {
                         {log.entityName || '-'}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600 max-w-xs truncate">
-                        {log.newValues || log.oldValues || '-'}
+                     <button
+  onClick={() => openChangesModal(log)}
+  className="px-3 py-1 text-sm font-medium text-primary-600 bg-primary-50 hover:bg-primary-100 rounded-lg border border-primary-200 transition"
+>
+  View Changes
+</button>
+
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         <div className="flex items-center gap-2">
@@ -172,6 +292,76 @@ const AuditLogs = () => {
           </div>
         )}
       </div>
+{isModalOpen && selectedLog && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+
+    {/* Modal */}
+    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl border border-gray-200 animate-in fade-in zoom-in duration-200">
+
+      {/* Header */}
+      <div className="flex items-start justify-between px-6 py-4 border-b bg-gray-50 rounded-t-2xl">
+        
+        <div>
+          <h3 className="text-lg font-semibold text-gray-900">
+            Changes Comparison
+          </h3>
+
+          <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
+            <span className="font-medium">{selectedLog.entityName}</span>
+
+            <span className="px-2 py-0.5 text-xs rounded-md bg-blue-100 text-blue-700 font-medium">
+              {selectedLog.action}
+            </span>
+          </div>
+        </div>
+
+        <button
+          onClick={closeChangesModal}
+          className="text-gray-400 hover:text-gray-600 hover:bg-gray-200 rounded-lg p-1 transition"
+        >
+          ✕
+        </button>
+
+      </div>
+
+      {/* Content */}
+      <div className="px-6 py-4">
+
+        <div className="border border-gray-200 rounded-xl overflow-hidden">
+
+          <div className="bg-gray-50 px-4 py-2 border-b">
+            <h4 className="text-sm font-semibold text-gray-700">
+              Field Changes
+            </h4>
+          </div>
+
+          <div className="max-h-80 overflow-y-auto">
+
+            {renderComparison(selectedLog.oldValues, selectedLog.newValues)}
+
+          </div>
+
+        </div>
+
+      </div>
+
+      {/* Footer */}
+      <div className="flex justify-end gap-3 px-6 py-4 border-t bg-gray-50 rounded-b-2xl">
+
+        <button
+          onClick={closeChangesModal}
+          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 transition"
+        >
+          Close
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+)}
+
     </Layout>
   );
 };
