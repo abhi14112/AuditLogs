@@ -10,7 +10,13 @@ public class AuditLogRepository : Repository<AuditLog>, IAuditLogRepository
     public AuditLogRepository(ApplicationDbContext context) : base(context)
     {
     }
-
+    public override async Task<IEnumerable<AuditLog>> GetAllAsync()
+    {
+        return await _dbSet
+            .Include(a => a.User)
+            .OrderByDescending(a => a.Timestamp)
+            .ToListAsync();
+    }
     public async Task<IEnumerable<AuditLog>> GetLogsByUserIdAsync(Guid userId)
     {
         return await _dbSet
