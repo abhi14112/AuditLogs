@@ -5,7 +5,8 @@ const AuditCheckpoint = ({ log, onClick, isActive }) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString('en-US', { 
       hour: '2-digit', 
-      minute: '2-digit'
+      minute: '2-digit',
+      hour12: true
     });
   };
 
@@ -22,7 +23,7 @@ const AuditCheckpoint = ({ log, onClick, isActive }) => {
 
   return (
     <div 
-      className={`relative pl-8 pb-8 cursor-pointer transition-all ${
+      className={`relative pl-8 pb-6 cursor-pointer transition-all ${
         isActive ? 'opacity-100' : 'opacity-70 hover:opacity-100'
       }`}
       onClick={onClick}

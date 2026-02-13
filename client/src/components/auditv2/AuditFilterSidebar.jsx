@@ -29,7 +29,8 @@ const AuditFilterSidebar = ({ onFilter, onClear }) => {
   };
 
   return (
-    <div className="w-64 bg-white border-r border-gray-200 p-6 space-y-6">
+    <div className="w-64 bg-white border-r border-gray-200 overflow-y-auto flex-shrink-0">
+      <div className="p-6 space-y-6">
       <div>
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Filters</h3>
       </div>
@@ -102,7 +103,9 @@ const AuditFilterSidebar = ({ onFilter, onClear }) => {
           <button
             onClick={() => {
               const today = new Date().toISOString().split('T')[0];
-              setFilters(prev => ({ ...prev, fromDate: today, toDate: today }));
+              const newFilters = { ...filters, fromDate: today, toDate: today };
+              setFilters(newFilters);
+              onFilter(newFilters);
             }}
             className="w-full text-left text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-lg transition-colors"
           >
@@ -112,11 +115,13 @@ const AuditFilterSidebar = ({ onFilter, onClear }) => {
             onClick={() => {
               const today = new Date();
               const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-              setFilters(prev => ({ 
-                ...prev, 
+              const newFilters = {
+                ...filters,
                 fromDate: lastWeek.toISOString().split('T')[0],
                 toDate: today.toISOString().split('T')[0]
-              }));
+              };
+              setFilters(newFilters);
+              onFilter(newFilters);
             }}
             className="w-full text-left text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-lg transition-colors"
           >
@@ -126,11 +131,13 @@ const AuditFilterSidebar = ({ onFilter, onClear }) => {
             onClick={() => {
               const today = new Date();
               const lastMonth = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
-              setFilters(prev => ({ 
-                ...prev, 
+              const newFilters = {
+                ...filters,
                 fromDate: lastMonth.toISOString().split('T')[0],
                 toDate: today.toISOString().split('T')[0]
-              }));
+              };
+              setFilters(newFilters);
+              onFilter(newFilters);
             }}
             className="w-full text-left text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50 px-3 py-2 rounded-lg transition-colors"
           >
@@ -138,6 +145,7 @@ const AuditFilterSidebar = ({ onFilter, onClear }) => {
           </button>
         </div>
       </div>
+    </div>
     </div>
   );
 };

@@ -3,6 +3,7 @@ import { auditLogsV2API, getErrorMessage } from '../lib/api';
 import AuditTimeline from '../components/auditv2/AuditTimeline';
 import AuditDetailPanel from '../components/auditv2/AuditDetailPanel';
 import AuditFilterSidebar from '../components/auditv2/AuditFilterSidebar';
+import Layout from '../components/Layout';
 
 const AuditLogsV2 = () => {
   const [timelineData, setTimelineData] = useState([]);
@@ -113,7 +114,8 @@ const AuditLogsV2 = () => {
   };
 
   return (
-    <div className="h-screen flex bg-gray-50">
+    <Layout>
+    <div className="flex bg-gray-50" style={{ height: 'calc(100vh - 64px)' }}>
       {/* Filter Sidebar */}
       <AuditFilterSidebar 
         onFilter={handleFilter}
@@ -123,7 +125,7 @@ const AuditLogsV2 = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <div className="bg-white border-b border-gray-200 px-8 py-6">
+        <div className="bg-white border-b border-gray-200 px-6 py-4 flex-shrink-0">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Audit Logs V2</h1>
@@ -143,7 +145,7 @@ const AuditLogsV2 = () => {
         </div>
 
         {/* Timeline View */}
-        <div className="flex-1 overflow-y-auto px-8 py-6">
+        <div className="flex-1 overflow-y-auto px-6 py-4">
           {error && (
             <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
               {error}
@@ -184,6 +186,7 @@ const AuditLogsV2 = () => {
         </>
       )}
     </div>
+    </Layout>
   );
 };
 
